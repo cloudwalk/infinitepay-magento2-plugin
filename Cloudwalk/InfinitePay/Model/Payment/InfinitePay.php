@@ -11,7 +11,6 @@ class InfinitePay extends \Magento\Payment\Model\Method\AbstractMethod
 {
 
     protected $_code = "infinitepay";
-    protected $_isOffline = true;
 
     public function isAvailable(
         \Magento\Quote\Api\Data\CartInterface $quote = null

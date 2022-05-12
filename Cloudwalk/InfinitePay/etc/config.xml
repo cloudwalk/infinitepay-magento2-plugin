@@ -8,7 +8,6 @@
 				<order_status>pending</order_status>
 				<title>InfinitePay</title>
 				<allowspecific>0</allowspecific>
-				<group>offline</group>
 			</infinitepay>
 		</payment>
 		<sales>
