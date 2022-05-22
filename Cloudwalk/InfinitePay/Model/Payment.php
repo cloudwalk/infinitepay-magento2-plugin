@@ -69,7 +69,7 @@ class Payment extends Cc
 			'sandbox' => $this->getConfigData('sandbox'),
 		];
 
-		//file_put_contents('testemalk.txt', json_encode($debug));
+	
     }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -148,8 +148,6 @@ class Payment extends Cc
 				)
             ];
 
-			file_put_contents('testemalk2.json', json_encode($request));
-
             $response = $this->authRequest($request);
 			
 			if (isset($response->data->id))
@@ -201,9 +199,6 @@ class Payment extends Cc
 			'header'=> $this->_curl->getHeaders(),
 			'response' => json_decode($response)
 		];
-		file_put_contents('testemalk.json', json_encode($debug));
-
-		throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
 
         if (!$response)
         {
