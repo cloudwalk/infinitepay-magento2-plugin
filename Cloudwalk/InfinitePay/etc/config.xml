@@ -4,8 +4,9 @@
 		<payment>
 			<infinitepay>
 				<active>1</active>
-				<model>Cloudwalk\InfinitePay\Model\Payment\InfinitePay</model>
+				<model>Cloudwalk\InfinitePay\Model\Payment</model>
 				<order_status>pending</order_status>
+				<payment_action>authorize</payment_action> 
 				<title>InfinitePay</title>
 				<allowspecific>0</allowspecific>
 			</infinitepay>
