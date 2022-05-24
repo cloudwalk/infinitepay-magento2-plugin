@@ -37,5 +37,8 @@
                </argument>
             </arguments>
         </referenceBlock>
+        <referenceContainer name="checkout.root">
+               <block class="Cloudwalk\InfinitePay\Block\AdminConfiguration" template="Cloudwalk_InfinitePay::configs.phtml" name="checkout.cart.infinitepay"  before="checkout.root" cacheable="false"></block>
+          </referenceContainer>
      </body>
 </page> 

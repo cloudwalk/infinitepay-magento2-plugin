@@ -27,7 +27,8 @@
                     <label data-bind="attr: {for: getCode() + '_cc_holdername'}" class="label">
                         <span>
                             <!-- ko i18n: 'Credit Holder Name'-->
-                            <!-- /ko --></span>
+                            <!-- /ko -->
+                        </span>
                     </label>
                     <div class="control">
                         <input type="text" name="payment[cc_holdername]" class="input-text" data-bind="attr: {'id': getCode()+'_cc_holdername'}">
@@ -38,7 +39,8 @@
                     <label data-bind="attr: {for: getCode() + '_installments'}" class="label">
                         <span>
                             <!-- ko i18n: 'Installments'-->
-                            <!-- /ko --></span>
+                            <!-- /ko -->
+                        </span>
                     </label>
                     <div class="control">
                         <select name="payment[installments]" class="select input-text" data-bind="attr: {id: getCode() + '_installments'},
@@ -54,7 +56,8 @@
                 <legend class="legend">
                     <span>
                         <!-- ko i18n: 'Credit Card Information'-->
-                        <!-- /ko --></span>
+                        <!-- /ko -->
+                    </span>
                 </legend><br />
                 <!-- /ko -->
                 <div class="field type">
@@ -66,7 +69,8 @@
                     <label data-bind="attr: {for: getCode() + '_cc_number'}" class="label">
                         <span>
                             <!-- ko i18n: 'Credit Card Number'-->
-                            <!-- /ko --></span>
+                            <!-- /ko -->
+                        </span>
                     </label>
                     <div class="control">
                         <input type="number" name="payment[cc_number]" class="input-text" value="" data-bind="attr: {
@@ -84,7 +88,8 @@
                     <label data-bind="attr: {for: getCode() + '_expiration'}" class="label">
                         <span>
                             <!-- ko i18n: 'Expiration Date'-->
-                            <!-- /ko --></span>
+                            <!-- /ko -->
+                        </span>
                     </label>
                     <div class="control">
                         <div class="fields group group-2">
@@ -120,7 +125,8 @@
                     <label data-bind="attr: {for: getCode() + '_cc_cid'}" class="label">
                         <span>
                             <!-- ko i18n: 'Card Verification Number'-->
-                            <!-- /ko --></span>
+                            <!-- /ko -->
+                        </span>
                     </label>
                     <div class="control _with-tooltip">
                         <input type="number" autocomplete="off" class="input-text cvv" name="payment[cc_cid]" value="" data-bind="attr: {id: getCode() + '_cc_cid',
@@ -133,7 +139,8 @@
                             <span class="field-tooltip-action action-cvv" tabindex="0" data-toggle="dropdown" data-bind="attr: {title: $t('What is this?')}, mageInit: {'dropdown':{'activeClass': '_active'}}">
                                 <span>
                                     <!-- ko i18n: 'What is this?'-->
-                                    <!-- /ko --></span>
+                                    <!-- /ko -->
+                                </span>
                             </span>
                             <div class="field-tooltip-content" data-target="dropdown" data-bind="html: getCvvImageHtml()"></div>
                         </div>

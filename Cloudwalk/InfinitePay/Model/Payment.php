@@ -23,8 +23,6 @@ use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\HTTP\Client\Curl;
 class Payment extends Cc
 {
-    
-    
     const CODE = 'infinitepay';
     protected $_code = self::CODE;
     protected $_canAuthorize = true;

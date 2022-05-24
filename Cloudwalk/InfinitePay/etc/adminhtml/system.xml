@@ -27,10 +27,10 @@
 					<label>Enable Sandbox</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
-				<field id="api_key" type="text" sortOrder="80" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+				<field id="api_key" type="text" sortOrder="80" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>API Key - Production</label>
 				</field>
-				<field id="sandbox_api_key" type="text" sortOrder="90" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+				<field id="sandbox_api_key" type="text" sortOrder="90" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>API Key - Sandbox</label>
 				</field>
 			</group>
