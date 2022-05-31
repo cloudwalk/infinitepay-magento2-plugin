@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+   <!-- Configuration reader -->
+   <virtualType name="ConfigProvider" type="Magento\Payment\Gateway\Config\Config">
+      <arguments>
+         <argument name="methodCode" xsi:type="const">\Cloudwalk\InfinitePay\Model\Ui\ConfigProvider::CODE</argument>
+      </arguments>
+   </virtualType>
+
+   <virtualType name="ConfigProvider" type="Cloudwalk\InfinitePay\Model\Ui\ConfigProvider">
+      <arguments>
+         <argument name="config" xsi:type="object">InfinitePayConfig</argument>
+      </arguments>
+   </virtualType>
+
+   <type name="Magento\Checkout\Model\CompositeConfigProvider">
+      <arguments>
+         <argument name="configProviders" xsi:type="array">
+            <item name="infinitepay_config_provider" xsi:type="object">ConfigProvider</item>
+         </argument>
+      </arguments>
+   </type>
+
+   <type name="Magento\Payment\Model\CcGenericConfigProvider">
+      <arguments>
+         <argument name="methodCodes" xsi:type="array">
+            <item name="infinitepay" xsi:type="const">Cloudwalk\InfinitePay\Model\Payment::CODE</item>
+         </argument>
+      </arguments>
+   </type>
+</config>
