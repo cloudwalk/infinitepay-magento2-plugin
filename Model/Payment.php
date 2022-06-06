@@ -24,23 +24,27 @@ use Magento\Checkout\Model\Cart;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\HTTP\Client\Curl;
+use Magento\Store\Model\StoreManagerInterface;
 
 
 class Payment extends Cc
 {
-    const CODE = 'infinitepay';
-    protected $_code = self::CODE;
-    protected $_canAuthorize = true;
-    protected $_canCapture = true;
-    protected $_isGateway = true;
-    protected $_countryFactory;
+	const VERSION = '1.0.0';
+	const CODE = 'infinitepay';
+	protected $_code = self::CODE;
+	protected $_canAuthorize = true;
+	protected $_canCapture = true;
+	protected $_isGateway = true;
+	protected $_countryFactory;
 	protected $_canSaveCc = false;
-    protected $cart = null;
+	protected $cart = null;
 	protected $_customerSession;
 	protected $_checkoutSession;
 	protected $customerRepository;
 	protected $_logger;
 	protected $_curl;
+	private $storeManager;
+
 
 
     public function __construct(		
@@ -59,16 +63,18 @@ class Payment extends Cc
 		Cart $cart, 
 		CustomerRepositoryInterface $customerRepository,
 		\Magento\Framework\HTTP\Client\Curl $curl,
+	    	StoreManagerInterface $storeManager,
 		array $data = array()
 	) {
-        parent::__construct($context, $registry, $extensionFactory, $customAttributeFactory, $paymentData, $scopeConfig, $logger, $moduleList, $localeDate, null, null, $data);
-        $this->cart = $cart;
-        $this->_countryFactory = $countryFactory;
+		parent::__construct($context, $registry, $extensionFactory, $customAttributeFactory, $paymentData, $scopeConfig, $logger, $moduleList, $localeDate, null, null, null, $data);
+		$this->cart = $cart;
+		$this->_countryFactory = $countryFactory;
 		$this->_checkoutSession = $checkoutSession;
 		$this->_curl = $curl;
 		$this->customerRepository = $customerRepository;
-        $this->_customerSession = $customerSession;	
+		$this->_customerSession = $customerSession;	
 		$this->_logger = $logger;
+		$this->storeManager = $storeManager;
     }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -147,8 +153,8 @@ class Payment extends Cc
 					)
 				),
 				'metadata' => array(
-					'store_url' => (string)$this->getBaseUrl(),
-					'plugin_version' => '0.0.1'
+					'store_url' => $this->storeManager->getStore()->getBaseUrl(),
+					'plugin_version' => self::VERSION
 				)
             ];
 
