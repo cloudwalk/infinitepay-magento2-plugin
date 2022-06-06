@@ -24,7 +24,6 @@ use Magento\Checkout\Model\Cart;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\HTTP\Client\Curl;
-use Magento\Store\Model\StoreManagerInterface;
 
 
 class Payment extends Cc
@@ -43,9 +42,6 @@ class Payment extends Cc
 	protected $customerRepository;
 	protected $_logger;
 	protected $_curl;
-	private $storeManager;
-
-
 
     public function __construct(		
 		Session $customerSession,
@@ -63,10 +59,9 @@ class Payment extends Cc
 		Cart $cart, 
 		CustomerRepositoryInterface $customerRepository,
 		\Magento\Framework\HTTP\Client\Curl $curl,
-	    	StoreManagerInterface $storeManager,
 		array $data = array()
 	) {
-		parent::__construct($context, $registry, $extensionFactory, $customAttributeFactory, $paymentData, $scopeConfig, $logger, $moduleList, $localeDate, null, null, null, $data);
+		parent::__construct($context, $registry, $extensionFactory, $customAttributeFactory, $paymentData, $scopeConfig, $logger, $moduleList, $localeDate, null, null, $data);
 		$this->cart = $cart;
 		$this->_countryFactory = $countryFactory;
 		$this->_checkoutSession = $checkoutSession;
@@ -74,7 +69,6 @@ class Payment extends Cc
 		$this->customerRepository = $customerRepository;
 		$this->_customerSession = $customerSession;	
 		$this->_logger = $logger;
-		$this->storeManager = $storeManager;
     }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -97,7 +91,10 @@ class Payment extends Cc
 					);
 				}
 			}
-			
+		
+		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+		
             //build array of all necessary details to pass to infinitePay
             $request = [
 				'payment' => array(
@@ -153,7 +150,7 @@ class Payment extends Cc
 					)
 				),
 				'metadata' => array(
-					'store_url' => $this->storeManager->getStore()->getBaseUrl(),
+					'store_url' => $storeManager->getStore()->getBaseUrl(),
 					'plugin_version' => self::VERSION
 				)
             ];
