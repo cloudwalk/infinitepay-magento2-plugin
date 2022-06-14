@@ -28,11 +28,10 @@ define([
         getInstallments: function () {
             let max_installments = window.checkoutConfig.payment.infinitepay.max_installments;
             let arr_installments = window.checkoutConfig.payment.infinitepay.installments;
-            let amount = (Math.round(window.checkoutConfig.totalsData.grand_total * 100) / 100).toFixed(2);
             let installments = [];
             for (let i = 1; i <= max_installments; i++) {
                 if (i === 1) {
-                    installments.push({ value: 1, text: 'R$ ' + amount + ' à vista' });
+                    installments.push({ value: 1, text: 'R$ ' + window.checkoutConfig.payment.infinitepay.price + ' à vista' });
                 } else {
                     let new_value = arr_installments[i - 1]['value'];
                     let has_interest = (arr_installments[i - 1]['interest'] ? 'com' : 'sem') + ' juros';
