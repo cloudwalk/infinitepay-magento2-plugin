@@ -46,6 +46,9 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
+	$quote = $this->checkoutSession->getQuote();
+        $amount = (float)$quote->getGrandTotal();
+
         return [
             'payment' => [
                 self::CODE => [
@@ -55,7 +58,8 @@ class ConfigProvider implements ConfigProviderInterface
                     'max_installments_free' => $this->config->getValue('max_installments_free'),
                     'instructions' => $this->config->getValue('instructions'),
                     'description' => $this->config->getValue('description'),
-                    'version' => '0.0.1'
+                    'version' => '0.0.1',
+		    'price' => number_format((float)$amount, 2, '.', '')
                 ],
             ]
         ];
