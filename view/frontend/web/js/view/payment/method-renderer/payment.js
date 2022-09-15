@@ -9,6 +9,8 @@ define([
             template: 'Cloudwalk_InfinitePay/payment/payment'
         },
         getData: function () {
+            var cardToken = this.getCardToken(this.creditCardNumber(), this.creditCardExpMonth(), this.creditCardExpYear());
+
             var data = {
                 'method': this.getCode(),
                 'additional_data': {
@@ -18,9 +20,7 @@ define([
                     'cc_ss_start_month': this.creditCardSsStartMonth(),
                     'cc_ss_start_year': this.creditCardSsStartYear(),
                     'cc_type': this.creditCardType(),
-                    'cc_exp_year': this.creditCardExpYear(),
-                    'cc_exp_month': this.creditCardExpMonth(),
-                    'cc_number': this.creditCardNumber()
+                    'cc_card_token': cardToken
                 }
             };
             return data;
@@ -56,6 +56,28 @@ define([
         validate: function () {
             var $form = $('#' + this.getCode() + '-form');
             return $form.validation() && $form.validation('isValid');
+        },
+        getCardToken: function(creditCardNumber, creditCardExpMonth, creditCardExpYear) {
+            var cardToken = "";
+            jQuery.ajax({
+                url: window.checkoutConfig.payment.infinitepay.url_tokenize,
+                contentType: "application/json",
+                type: 'POST',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader('Authorization', "Bearer " + window.checkoutConfig.payment.infinitepay.jwt);
+                },
+                data: JSON.stringify({
+                    number: creditCardNumber, //this.creditCardNumber(),
+                    expiration_month: creditCardExpMonth, //this.creditCardExpMonth(),
+                    expiration_year: creditCardExpYear //this.creditCardExpYear()
+                }),
+                async: false,
+                success: function (data) { 
+                    cardToken = data.token;
+                },
+            });
+
+            return cardToken;
         }
     });
 });
