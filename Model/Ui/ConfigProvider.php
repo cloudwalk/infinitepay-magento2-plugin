@@ -109,12 +109,12 @@ class ConfigProvider implements ConfigProviderInterface
 
         $this->_curl->post($url, json_encode($data));
         $response = $this->_curl->getBody();
-        if (!$response)
-        {
-            return "";
-        }
 
         $jsonResponse = json_decode($response);
+
+        if(!$jsonResponse) {
+            return "";
+        }
 
         
         return $jsonResponse->access_token;

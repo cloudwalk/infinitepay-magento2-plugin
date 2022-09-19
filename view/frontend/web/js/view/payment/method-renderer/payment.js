@@ -9,8 +9,6 @@ define([
             template: 'Cloudwalk_InfinitePay/payment/payment'
         },
         getData: function () {
-            var cardToken = this.getCardToken(this.creditCardNumber(), this.creditCardExpMonth(), this.creditCardExpYear());
-
             var data = {
                 'method': this.getCode(),
                 'additional_data': {
@@ -20,7 +18,7 @@ define([
                     'cc_ss_start_month': this.creditCardSsStartMonth(),
                     'cc_ss_start_year': this.creditCardSsStartYear(),
                     'cc_type': this.creditCardType(),
-                    'cc_card_token': cardToken
+                    'cc_card_token': jQuery('#credit-card-token').val()
                 }
             };
             return data;
@@ -54,8 +52,16 @@ define([
             return true;
         },
         validate: function () {
+            console.log('entrou');
             var $form = $('#' + this.getCode() + '-form');
-            return $form.validation() && $form.validation('isValid');
+            if(!($form.validation() && $form.validation('isValid'))){
+                return false;
+            }
+
+            var cardToken = this.getCardToken(this.creditCardNumber(), this.creditCardExpMonth(), this.creditCardExpYear());
+            jQuery('#credit-card-token').val(cardToken)
+
+            return true;
         },
         getCardToken: function(creditCardNumber, creditCardExpMonth, creditCardExpYear) {
             var cardToken = "";
