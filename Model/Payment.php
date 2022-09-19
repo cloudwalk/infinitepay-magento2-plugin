@@ -73,7 +73,6 @@ class Payment extends Cc
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-		$a = 1/0;
 		$order = $payment->getOrder();
         $billing = $order->getBillingAddress();
 		$info = $this->getInfoInstance();
