@@ -52,7 +52,6 @@ define([
             return true;
         },
         validate: function () {
-            console.log('entrou');
             var $form = $('#' + this.getCode() + '-form');
             if(!($form.validation() && $form.validation('isValid'))){
                 return false;

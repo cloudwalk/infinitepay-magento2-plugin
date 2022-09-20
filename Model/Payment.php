@@ -77,7 +77,7 @@ class Payment extends Cc
         $billing = $order->getBillingAddress();
 		$info = $this->getInfoInstance();
 		$paymentInfo = $info->getAdditionalInformation()['additional_data'];
-
+		$isTest = ((int)$this->getConfigData('sandbox') == 1);
         try
         {
 			$order_items = [];
@@ -91,6 +91,7 @@ class Payment extends Cc
 					);
 				}
 			}
+
 		
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
@@ -106,10 +107,8 @@ class Payment extends Cc
 				),
 				'card' => array(
 					'cvv' => $payment->getCcCid(), 
-					'card_number' => $payment->getCcNumber(), 
-					'card_holder_name' => $paymentInfo['cc_holdername'],
-					'card_expiration_year' => $payment->getCcExpYear(), 
-					'card_expiration_month' => sprintf('%02d',$payment->getCcExpMonth())
+					'token' => $paymentInfo['cc_card_token'], 
+					'card_holder_name' => $paymentInfo['cc_holdername']
 				),
 				'order'                => array(
 					'id'               => (string)$order->getIncrementId(),
@@ -154,8 +153,8 @@ class Payment extends Cc
 					'plugin_version' => self::VERSION
 				)
             ];
-
-            $response = $this->authRequest($request);
+			
+            $response = $this->authRequest($request, $isTest);
 			
 			if($response->data->attributes->authorization_code === '00')
 			{
@@ -168,7 +167,7 @@ class Payment extends Cc
         }
         catch(\Exception $e)
         {
-			if($this->getConfigData('sandbox') == 1) { 
+			if($isTest) { 
 				$this->_logger->error([$e->getMessage(), $payment->getData()], null, true);
 			}
 			throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
@@ -180,24 +179,65 @@ class Payment extends Cc
         return $this;
     }
 
+	private function getJwt($isTest)
+    {
+        
+        $clientId = $this->getConfigData('client_id');
+        $clientSecret = $this->getConfigData('client_secret');
+        $url = 'https://api.infinitepay.io/v2/oauth/token';
+
+        if($isTest) {
+			$url = 'https://api-staging.infinitepay.io/v2/oauth/token';
+		}
+
+        $this->_curl->addHeader('Content-Type', 'application/json');
+		$this->_curl->addHeader('Accept', 'application/json');
+        $this->_curl->setOption(CURLOPT_HEADER, 0);
+		$this->_curl->setOption(CURLOPT_TIMEOUT, 60);
+		$this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
+		$this->_curl->setOption(CURLOPT_USERAGENT, "InfinitePay Plugin for Magento 2");
+        $this->_curl->setOption(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+
+        $data = [
+            "grant_type" => "client_credentials",
+            "client_id" => $clientId,
+            "client_secret" => $clientSecret,
+            "scope" => "transaction"
+        ];
+
+        $this->_curl->post($url, json_encode($data));
+        $response = $this->_curl->getBody();
+
+        $jsonResponse = json_decode($response);
+
+        if(!$jsonResponse) {
+            return "";
+        }
+
+        
+        return $jsonResponse->access_token;
+    }
+
 	protected function converToCents($amount) {
 		$dollars = str_replace('$', '', $amount);
 		return (int)((string)( $dollars * 100 ));
 	}
 	
-    public function authRequest($request)
+    public function authRequest($request, $isTest)
     {
 
 		$url = 'https://api.infinitepay.io/v2/transactions';
-		if((int)$this->getConfigData('sandbox') == 1) {
+		if($isTest) {
 			$url = 'https://authorizer-staging.infinitepay.io/v2/transactions';
 			$this->_curl->addHeader('Env','mock');
 		}
+	
+		$token = $this->getJwt($isTest);
 		
-		$token = ($this->getConfigData('sandbox') == 1) ? $this->getConfigData('sandbox_api_key') : $this->getConfigData('api_key');		
+
 		$this->_curl->addHeader('Content-Type', 'application/json');
 		$this->_curl->addHeader('Accept', 'application/json');
-		$this->_curl->addHeader('Authorization', $token); 
+		$this->_curl->addHeader('Authorization', "Bearer {$token}"); 
 		$this->_curl->setOption(CURLOPT_HEADER, 0);
 		$this->_curl->setOption(CURLOPT_TIMEOUT, 60);
 		$this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
@@ -206,25 +246,27 @@ class Payment extends Cc
 		
 		$this->_curl->post($url, json_encode($request));
 		$response = $this->_curl->getBody();
+
+		$responseJson = json_decode($response);
 		
-		if($this->getConfigData('sandbox') == 1) { 
+		if($isTest) { 
 			$debug = [
 				'url' => $url,
 				'token' => $token,
 				'request' => $request,
 				'header'=> $this->_curl->getHeaders(),
-				'response' => json_decode($response)
+				'response' => $responseJson
 			];
 			$this->_logger->debug(['infinitepay request', $debug], null, true);
 		}
 
-        if (!$response)
+        if (!$responseJson)
         {
 			$this->_logger->error(__('Failed authorize request.'));
             throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
         }
 		
-        return json_decode($response);
+        return $responseJson;
     }
 
 	public function assignData(\Magento\Framework\DataObject $data)
