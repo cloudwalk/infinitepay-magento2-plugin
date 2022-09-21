@@ -53,7 +53,7 @@ define([
         },
         validate: function () {
             var $form = $('#' + this.getCode() + '-form');
-            if(!($form.validation() && $form.validation('isValid'))){
+            if (!($form.validation() && $form.validation("isValid"))) {
                 return false;
             }
 
@@ -62,25 +62,25 @@ define([
 
             return true;
         },
-        getCardToken: function(creditCardNumber, creditCardExpMonth, creditCardExpYear) {
-            var cardToken = "";
+        getCardToken: function (creditCardNumber, creditCardExpMonth, creditCardExpYear) {
+            let cardToken = "";
+            
             jQuery.ajax({
-                url: window.checkoutConfig.payment.infinitepay.url_tokenize,
-                contentType: "application/json",
-                type: 'POST',
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader('Authorization', "Bearer " + window.checkoutConfig.payment.infinitepay.jwt);
-                },
-                data: JSON.stringify({
-                    number: creditCardNumber, 
-                    expiration_month: creditCardExpMonth.padStart(2, '0'),
-                    expiration_year: creditCardExpYear.substring(2, creditCardExpYear.length)
-                }),
-                async: false,
-                success: function (data) { 
-                    cardToken = data.token;
-                },
-            });
+            url: window.checkoutConfig.payment.infinitepay.url_tokenize,
+            contentType: "application/json",
+            type: "POST",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', "Bearer " + window.checkoutConfig.payment.infinitepay.jwt);
+            },
+            data: JSON.stringify({
+                number: creditCardNumber, 
+                expiration_month: creditCardExpMonth.padStart(2, '0'),
+                expiration_year: creditCardExpYear.substring(2, creditCardExpYear.length)
+            }),
+            async: false,
+            success: function (data) { 
+                cardToken = data.token;
+            }});
 
             return cardToken;
         }
