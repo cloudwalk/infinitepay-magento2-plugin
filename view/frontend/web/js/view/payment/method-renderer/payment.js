@@ -72,9 +72,9 @@ define([
                     xhr.setRequestHeader('Authorization', "Bearer " + window.checkoutConfig.payment.infinitepay.jwt);
                 },
                 data: JSON.stringify({
-                    number: creditCardNumber, //this.creditCardNumber(),
-                    expiration_month: creditCardExpMonth, //this.creditCardExpMonth(),
-                    expiration_year: creditCardExpYear //this.creditCardExpYear()
+                    number: creditCardNumber, 
+                    expiration_month: creditCardExpMonth.padStart(2, '0'),
+                    expiration_year: creditCardExpYear.substring(2, creditCardExpYear.length)
                 }),
                 async: false,
                 success: function (data) { 
