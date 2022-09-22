@@ -8,6 +8,7 @@ namespace Cloudwalk\InfinitePay\Model\Ui;
 use Magento\Checkout\Model\ConfigProviderInterface;
 use Magento\Checkout\Model\Session;
 use Magento\Payment\Gateway\ConfigInterface;
+use Magento\Framework\HTTP\Client\Curl;
 
 /**
  * Class ConfigProvider
@@ -26,6 +27,8 @@ class ConfigProvider implements ConfigProviderInterface
      */
     private $checkoutSession;
 
+    protected $_curl;
+
     /**
      * ConfigProvider constructor.
      * @param ConfigInterface $config
@@ -37,6 +40,7 @@ class ConfigProvider implements ConfigProviderInterface
     ) {
         $this->checkoutSession = $checkoutSession;
         $this->config = $config;
+        $this->_curl = new Curl();
     }
 
     /**
@@ -46,23 +50,74 @@ class ConfigProvider implements ConfigProviderInterface
      */
     public function getConfig()
     {
-	$quote = $this->checkoutSession->getQuote();
+	    $quote = $this->checkoutSession->getQuote();
         $amount = (float)$quote->getGrandTotal();
+        $isTest = ((int)$this->config->getValue('sandbox') == 1);
 
         return [
             'payment' => [
                 self::CODE => [
-                    'isTest' => (bool) ($this->config->getValue('sandbox') == 'test'),
+                    'isTest' => (bool)$isTest,
                     'installments' => $this->calculate_installments(),
                     'max_installments' => $this->config->getValue('max_installments'),
                     'max_installments_free' => $this->config->getValue('max_installments_free'),
                     'instructions' => $this->config->getValue('instructions'),
                     'description' => $this->config->getValue('description'),
                     'version' => '0.0.1',
-		    'price' => number_format((float)$amount, 2, '.', '')
+		            'price' => number_format((float)$amount, 2, '.', ''),
+                    'jwt' => $this->getJwt($isTest),
+                    'url_tokenize' => $this->getUrlTokenize($isTest)
                 ],
             ]
         ];
+    }
+
+    private function getUrlTokenize($isTest)
+    {
+        if($isTest) {
+			return 'https://authorizer-staging.infinitepay.io/v2/cards/tokenize';
+		}
+
+        return 'https://api.infinitepay.io/v2/cards/tokenize';
+    }
+
+    private function getJwt($isTest)
+    {
+        
+        $clientId = $this->config->getValue('client_id');
+        $clientSecret = $this->config->getValue('client_secret');
+        $url = 'https://api.infinitepay.io/v2/oauth/token';
+
+        if($isTest) {
+			$url = 'https://api-staging.infinitepay.io/v2/oauth/token';
+		}
+
+        $this->_curl->addHeader('Content-Type', 'application/json');
+		$this->_curl->addHeader('Accept', 'application/json');
+        $this->_curl->setOption(CURLOPT_HEADER, 0);
+		$this->_curl->setOption(CURLOPT_TIMEOUT, 60);
+		$this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
+		$this->_curl->setOption(CURLOPT_USERAGENT, "InfinitePay Plugin for Magento 2");
+        $this->_curl->setOption(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+
+        $data = [
+            "grant_type" => "client_credentials",
+            "client_id" => $clientId,
+            "client_secret" => $clientSecret,
+            "scope" => "card_tokenization"
+        ];
+
+        $this->_curl->post($url, json_encode($data));
+        $response = $this->_curl->getBody();
+
+        $jsonResponse = json_decode($response);
+
+        if(!$jsonResponse) {
+            return "";
+        }
+
+        
+        return $jsonResponse->access_token;
     }
 
 

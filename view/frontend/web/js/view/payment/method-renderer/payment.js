@@ -18,9 +18,7 @@ define([
                     'cc_ss_start_month': this.creditCardSsStartMonth(),
                     'cc_ss_start_year': this.creditCardSsStartYear(),
                     'cc_type': this.creditCardType(),
-                    'cc_exp_year': this.creditCardExpYear(),
-                    'cc_exp_month': this.creditCardExpMonth(),
-                    'cc_number': this.creditCardNumber()
+                    'cc_card_token': jQuery('#credit-card-token').val()
                 }
             };
             return data;
@@ -55,7 +53,36 @@ define([
         },
         validate: function () {
             var $form = $('#' + this.getCode() + '-form');
-            return $form.validation() && $form.validation('isValid');
+            if (!($form.validation() && $form.validation("isValid"))) {
+                return false;
+            }
+
+            var cardToken = this.getCardToken(this.creditCardNumber(), this.creditCardExpMonth(), this.creditCardExpYear());
+            jQuery('#credit-card-token').val(cardToken)
+
+            return true;
+        },
+        getCardToken: function (creditCardNumber, creditCardExpMonth, creditCardExpYear) {
+            let cardToken = "";
+            
+            jQuery.ajax({
+            url: window.checkoutConfig.payment.infinitepay.url_tokenize,
+            contentType: "application/json",
+            type: "POST",
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('Authorization', "Bearer " + window.checkoutConfig.payment.infinitepay.jwt);
+            },
+            data: JSON.stringify({
+                number: creditCardNumber, 
+                expiration_month: creditCardExpMonth.padStart(2, '0'),
+                expiration_year: creditCardExpYear.substring(2, creditCardExpYear.length)
+            }),
+            async: false,
+            success: function (data) { 
+                cardToken = data.token;
+            }});
+
+            return cardToken;
         }
     });
 });

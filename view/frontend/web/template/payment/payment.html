@@ -23,6 +23,7 @@
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
 
             <fieldset data-bind="attr: {class: 'fieldset payment items ccard ' + getCode(), id: 'payment_form_' + getCode()}">
+                <input type="hidden" id="credit-card-token" value="">
 
                 <div class="field number required">
                     <label data-bind="attr: {for: getCode() + '_cc_holdername'}" class="label">
