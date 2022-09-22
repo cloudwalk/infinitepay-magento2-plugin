@@ -23,7 +23,7 @@
         <form class="form" data-bind="attr: {'id': getCode() + '-form'}">
 
             <fieldset data-bind="attr: {class: 'fieldset payment items ccard ' + getCode(), id: 'payment_form_' + getCode()}">
-                <input type="hidden" id="credit-card-token" value="">
+                <input type="hidden" name="payment[cc_token]" data-bind="attr: {'id': getCode()+'_cc_token'}" value="">
 
                 <div class="field number required">
                     <label data-bind="attr: {for: getCode() + '_cc_holdername'}" class="label">
@@ -146,6 +146,17 @@
                             </span>
                             <div class="field-tooltip-content" data-target="dropdown" data-bind="html: getCvvImageHtml()"></div>
                         </div>
+                    </div>
+                </div>
+                <div class="field number required">
+                    <label data-bind="attr: {for: getCode() + '_document_id'}" class="label">
+                        <span>
+                            <!-- ko i18n: 'Document Id'-->
+                            <!-- /ko -->
+                        </span>
+                    </label>
+                    <div class="control">
+                        <input type="text" name="payment[document_id]" class="input-text" data-bind="attr: {'id': getCode()+'_document_id', 'data-validate': JSON.stringify({required:true})}">
                     </div>
                 </div>
                 <!-- /ko -->
