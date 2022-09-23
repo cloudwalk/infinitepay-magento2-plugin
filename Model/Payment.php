@@ -106,7 +106,7 @@ class Payment extends Cc
 			),
 			'card' => array(
 				'cvv' => $payment->getCcCid(), 
-				'token' => $paymentInfo['cc_card_token'], 
+				'token' => $paymentInfo['cc_token'], 
 				'card_holder_name' => $paymentInfo['cc_holdername'],
 			),
 			'order'                => array(
@@ -116,6 +116,7 @@ class Payment extends Cc
 				'delivery_details' => array(
 					'email'        => $order->getCustomerEmail(),
 					'name'         => $billing->getName(),
+					'phone_number' => $billing->getTelephone(),
 					'address'      => array(
 						'line1'    => $billing->getStreetLine(1),
 						'line2'    => $billing->getStreetLine(2),
@@ -135,7 +136,9 @@ class Payment extends Cc
 				'city'     		  => $billing->getCity(),
 				'state'  		  => $billing->getRegion(),
 				'zip'    		  => $billing->getPostcode(),
-				'country'		  => $billing->getCountryId()
+				'country'		  => $billing->getCountryId(),
+				'document_number' => $paymentInfo['document_id'],
+				'phone_number' 	  => $billing->getTelephone()
 			),
 			'billing_details'	 => array(
 				'address'    	 => array(
