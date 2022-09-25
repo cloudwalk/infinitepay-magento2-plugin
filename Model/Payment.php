@@ -140,7 +140,13 @@ class Payment extends Cc
 		if($response->data->attributes->authorization_code === '00' || $response->data->attributes->authorization_code === '01')
 		{
 			$payment->setTransactionId($response->data->id);
-			$payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array)$response->data]);
+			$additionalData = [
+				$this->_code => [
+					'payment_method' => $paymentMethod,
+					'data' => (array)$response->data
+				]
+			];
+			$payment->setAdditionalInformation($additionalData);
 
 			if($paymentMethod === 'pix') {;
 				$payment->setMethod('pix');
