@@ -5,33 +5,47 @@
 			<group id="infinitepay" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
 				<label>InfinitePay</label>
 				<field id="active" type="select" sortOrder="10" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Enabled</label>
+					<label>Enabled Plugin</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
 				<field id="title" type="text" sortOrder="20" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
 					<label>Title</label>
 					<config_path>payment/infinitepay/title</config_path>
 				</field>
-				<field id="description" type="textarea" sortOrder="30" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Description</label>
+				<field id="active_creditcard" type="select" sortOrder="30" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>Enabled Credit Card</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
-				<field id="instructions" type="textarea" sortOrder="40" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Instructions</label>
+				<field id="instructions_creditcard" type="textarea" sortOrder="40" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>Credit Card Instructions</label>
 				</field>
 				<field id="max_installments" type="text" sortOrder="50" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Max installments</label>
+					<label>Credit Card Max installments</label>
 				</field>
 				<field id="max_installments_free" type="text" sortOrder="60" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
-					<label>Max installments free</label>
+					<label>Credit Card Max installments free</label>
 				</field>
-				<field id="sandbox" type="select" sortOrder="70" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+				<field id="active_pix" type="select" sortOrder="70" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>Enabled PIX</label>
+					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+				</field>
+				<field id="instructions_pix" type="textarea" sortOrder="80" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>PIX Instructions</label>
+				</field>
+				<field id="discount_pix" type="text" sortOrder="90" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>PIX Discount (%)</label>
+				</field>
+				<field id="min_value_pix" type="text" sortOrder="100" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
+					<label>PIX Minimum value (R$)</label>
+				</field>
+				<field id="sandbox" type="select" sortOrder="110" showInWebsite="1" showInStore="1" showInDefault="1" translate="label">
 					<label>Enable Sandbox</label>
 					<source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
 				</field>
-				<field id="client_id" type="text" sortOrder="80" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+				<field id="client_id" type="text" sortOrder="120" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>Client Id</label>
 				</field>
-				<field id="client_secret" type="text" sortOrder="80" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+				<field id="client_secret" type="text" sortOrder="130" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>Client Secret</label>
 				</field>
 			</group>

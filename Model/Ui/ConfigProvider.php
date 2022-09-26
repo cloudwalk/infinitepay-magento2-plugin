@@ -112,12 +112,12 @@ class ConfigProvider implements ConfigProviderInterface
 
         $jsonResponse = json_decode($response);
 
-        if(!$jsonResponse) {
+        if(!$jsonResponse && !isset($jsonResponse->access_token)) {
             return "";
         }
 
         
-        return $jsonResponse->access_token;
+        return $jsonResponse?->access_token;
     }
 
 
