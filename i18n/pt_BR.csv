@@ -12,3 +12,7 @@
 "Expiration Date", "Expiration Date"
 "Card Verification Number", "Card Verification Number"
 "Document Id", "CPF"
+"Checkout to display the QRCode", "Finalize sua compra para exibir o QRCode"
+"Open your bank app and select the option to pay with PIX/Scan QRCode", "Abra o app do seu banco e selecione a opção pagar com Pix/Escanear QRCode"
+"Check the data and confirm your payment through your bank's app", "Confira os dados e confirme seu pagamento pelo app do seu banco"
+"Choose a payment method", "Escolha um método de pagamento"

@@ -1,22 +1,21 @@
 <?php
 namespace Cloudwalk\InfinitePay\Api;
-use Magento\Framework\Webapi\Rest\Request;
 
 interface OrdersInterface
 {
     /**
      * {@inheritDoc}
-     *
+     * GET order status
      * @param int $id
-     * @return String
-     * @throws NoSuchEntityException
+     * @return string
      */
     public function getStatus(int $id);
 
     /**
      * {@inheritDoc}
-     * @param mixed $filter
-     * @return void
+     * POST callback
+     * @param mixed $data
+     * @return string
      */
-    public function callbackStatus(Request $data);
+    public function callbackStatus(\Magento\Framework\Webapi\Rest\Request $data);
 }

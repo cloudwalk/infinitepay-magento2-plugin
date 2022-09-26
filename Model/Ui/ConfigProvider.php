@@ -66,7 +66,9 @@ class ConfigProvider implements ConfigProviderInterface
                     'version' => '0.0.1',
 		            'price' => number_format((float)$amount, 2, '.', ''),
                     'jwt' => $this->getJwt($isTest),
-                    'url_tokenize' => $this->getUrlTokenize($isTest)
+                    'url_tokenize' => $this->getUrlTokenize($isTest),
+                    'cc_enabled' => (bool)$this->config->getValue('active_creditcard') == '1',
+                    'pix_enabled' => (bool)$this->config->getValue('active_pix') == '1',
                 ],
             ]
         ];
@@ -112,11 +114,10 @@ class ConfigProvider implements ConfigProviderInterface
 
         $jsonResponse = json_decode($response);
 
-        if(!$jsonResponse && !isset($jsonResponse->access_token)) {
+        if(!$jsonResponse || isset($jsonResponse->error)) {
             return "";
         }
 
-        
         return $jsonResponse?->access_token;
     }
 

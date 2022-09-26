@@ -84,6 +84,7 @@ define([
                     cardToken = data.token;
                 }});
 
+            console.log('getCardToken', cardToken);
             return cardToken;
         }
     });

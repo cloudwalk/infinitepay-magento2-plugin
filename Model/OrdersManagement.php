@@ -1,22 +1,19 @@
 <?php
 namespace Cloudwalk\InfinitePay\Model;
-use Cloudwalk\InfinitePay\Api\OrdersInterface;
-use Magento\Framework\Webapi\Rest\Request;
 
 /**
- * Class ProductRepository
+ * Class OrdersManagement
  */
-class OrdersManagement implements OrdersInterface
+class OrdersManagement implements Cloudwalk\InfinitePay\Api\OrdersInterface
 {
     const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 
     /**
      * {@inheritDoc}
-     *
-     * @param string $id
-     * @return String
-     * @throws NoSuchEntityException
+     * getorder status
+     * @param int $id
+     * @return string
      */
     public function getStatus(int $id) : string
     {
@@ -26,13 +23,14 @@ class OrdersManagement implements OrdersInterface
         
         return $order->getStatus();
     }
+ 
     /**
      * {@inheritDoc}
-     *
+     * process callback
      * @param mixed $data
-     * @return String
+     * @return string
      */
-    public function callbackStatus(Request $data) : string
+    public function callbackStatus(\Magento\Framework\Webapi\Rest\Request $data) : string
     {
         $orderId = $data->getParam('order_increment_id');
 
