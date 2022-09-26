@@ -42,6 +42,7 @@ class Payment extends Cc
 	protected $customerRepository;
 	protected $_logger;
 	protected $_curl;
+	protected $_transactionSecret;
 
     public function __construct(		
 		Session $customerSession,
@@ -77,10 +78,12 @@ class Payment extends Cc
 		$info = $this->getInfoInstance();
 		$paymentInfo = $info->getAdditionalInformation()['additional_data'];
 		$paymentMethod = $paymentInfo['payment_method'];
+		$order = $payment->getOrder();
 
 		if($paymentMethod === 'cc') {
 			$requestData = $this->buildCreditCardPayload($payment, $paymentInfo, $amount);
 		}else{
+			$this->_transactionSecret = sha1( $order->getIncrementId() . time() );
 			$requestData = $this->buildPixPayload($payment, $paymentInfo, $amount);
 		}
 		
@@ -139,21 +142,30 @@ class Payment extends Cc
 	private function handleResponse($response, $payment, $paymentMethod) {
 		if($response->data->attributes->authorization_code === '00' || $response->data->attributes->authorization_code === '01')
 		{
+			$order = $payment->getOrder();
 			$payment->setTransactionId($response->data->id);
 			$additionalData = [
 				$this->_code => [
 					'payment_method' => $paymentMethod,
+					'transaction_secret' =>  $this->_transactionSecret,
+					'order_increment_id' => $payment->getOrder()->getIncrementId(),
 					'data' => (array)$response->data
 				]
 			];
 			$payment->setAdditionalInformation($additionalData);
-
+			
+			
 			if($paymentMethod === 'pix') {;
 				$payment->setMethod('pix');
+				$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
+        		
 			}else{
+				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
 				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(false)->setIsTransactionClosed(true);
 			}
-			$payment->getOrder()->save();
+
+			$order->setState($orderState)->setStatus($orderState);
+			$order->save();
 			$payment->save();
 		} else {
 			throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
@@ -240,8 +252,6 @@ class Payment extends Cc
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 
-		$transactionSecret = sha1( $order->getIncrementId() . time() );
-
 		return [
 			'amount' => $this->converToCents($amount),
 			'capture_method' =>'pix',
@@ -252,8 +262,8 @@ class Payment extends Cc
 				'payment_method' => 'pix',
 				'callback' => array(
 					'validate' => '',
-					'confirm'  => $storeManager->getStore()->getBaseUrl() . '/infinitepay_pix_callback?order_id=' . $order->getIncrementId(),
-					'secret'   => $transactionSecret
+					'confirm'  => $storeManager->getStore()->getBaseUrl() . '/rest/V1/infinitepay/orders/pix_callback?order_increment_id=' . $order->getIncrementId(),
+					'secret'   => $this->_transactionSecret
 				),
 				'risk'           => array(
 					'session_id' => $this->_customerSession->getSessionId(),

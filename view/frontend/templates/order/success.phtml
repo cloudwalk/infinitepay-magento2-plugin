@@ -1,22 +1,44 @@
 <?php /* @var $block \vendor\module\Block\OnePage\CustomSuccess */?>
+<?php 
+    $data = $block->getPaymentAdditionalData();
+    if (count($data['additional_data']) && $data['additional_data']['payment_method'] === 'pix') {
+        $pixCode = $data['additional_data']['data']['attributes']['br_code'];
+        $orderIncrementId = $data['order_increment_id'];
+?> 
+
 <script>
     require(['jquery'], function($, hello) {
         $(document).ready(function() {
+            let code = 'infinitepay'
+            let orderId = $("#" + code + "-order-increment-id").val();
+
+            var intervalID = setInterval(function() {
+                $.get('/rest/V1/infinitepay/orders/' + orderId, function(data) {
+                    if  (data === 'processing') {
+                        $("#infinitepay-box-pix-qrcode").hide();
+                        $("#infinitepay-box-pix-success").show();
+                        clearInterval(intervalID);
+                    }          
+                });     
+             }, 5000);
+
             
         });
         
     });
     
 </script>
+<input type="hidden" id="infinitepay-order-increment-id" value="<? echo $orderIncrementId ?>" />
 
-<?php 
-    $data = $block->getPaymentAdditionalData();
-    if (count($data) && $data['payment_method'] === 'pix') {
-        $pixCode = $data['data']['attributes']['br_code'];
-?> 
-<h2>QRCODE para pagamento:</h2>
+<div id="infinitepay-box-pix-qrcode">
+    <h2>QRCODE para pagamento:</h2>
 
-<p>
-  <img id="copy-code" style="cursor:pointer; display: initial;margin-right: 1rem;" class="wcpix-img-copy-code" src="https://gerarqrcodepix.com.br/api/v1?brcode=<?php echo urlencode($pixCode); ?>" alt="QR Code"/></p>
+    <p>
+        <img id="copy-code" style="cursor:pointer; display: initial;margin-right: 1rem;" class="wcpix-img-copy-code" src="https://gerarqrcodepix.com.br/api/v1?brcode=<?php echo urlencode($pixCode); ?>" alt="QR Code"/>
+    </p>
+</div>
+<div id="infinitepay-box-pix-success" style="display:none">
+    <h2>PIX recebido com sucesso.</h2>
+</div>
 
 <? } ?>
