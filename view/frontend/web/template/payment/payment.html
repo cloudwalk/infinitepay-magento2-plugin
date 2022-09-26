@@ -24,6 +24,7 @@
 
             <fieldset data-bind="attr: {class: 'fieldset payment items ccard ' + getCode(), id: 'payment_form_' + getCode()}">
                 <input type="hidden" name="payment[cc_token]" data-bind="attr: {'id': getCode()+'_cc_token'}" value="">
+                <input type="hidden" name="payment[payment_method]" data-bind="attr: {'id': getCode()+'_payment_method'}" value="pix">
 
                 <div class="field number required">
                     <label data-bind="attr: {for: getCode() + '_cc_holdername'}" class="label">

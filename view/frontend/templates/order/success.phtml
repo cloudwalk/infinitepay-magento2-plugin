@@ -1,0 +1,22 @@
+<?php /* @var $block \vendor\module\Block\OnePage\CustomSuccess */?>
+<script>
+    require(['jquery'], function($, hello) {
+        $(document).ready(function() {
+            
+        });
+        
+    });
+    
+</script>
+
+<?php 
+    $data = $block->getPaymentAdditionalData();
+    if (count($data) && $data['payment_method'] === 'pix') {
+        $pixCode = $data['data']['attributes']['br_code'];
+?> 
+<h2>QRCODE para pagamento:</h2>
+
+<p>
+  <img id="copy-code" style="cursor:pointer; display: initial;margin-right: 1rem;" class="wcpix-img-copy-code" src="https://gerarqrcodepix.com.br/api/v1?brcode=<?php echo urlencode($pixCode); ?>" alt="QR Code"/></p>
+
+<? } ?>

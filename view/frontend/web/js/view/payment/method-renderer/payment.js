@@ -19,7 +19,8 @@ define([
                     'cc_ss_start_year': this.creditCardSsStartYear(),
                     'cc_type': this.creditCardType(),
                     'cc_token': $('#' + this.getCode() + '_cc_token').val(),
-                    'document_id': $('#' + this.getCode() + '_document_id').val()
+                    'document_id': $('#' + this.getCode() + '_document_id').val(),
+                    'payment_method': $('#' + this.getCode() + '_payment_method').val()
                 }
             };
             return data;
