@@ -4,7 +4,7 @@ namespace Cloudwalk\InfinitePay\Model;
 /**
  * Class OrdersManagement
  */
-class OrdersManagement implements Cloudwalk\InfinitePay\Api\OrdersInterface
+class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
 {
     const CODE = 'infinitepay';
 	protected $_code = self::CODE;

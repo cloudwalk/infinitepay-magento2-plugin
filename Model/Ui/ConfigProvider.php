@@ -118,7 +118,7 @@ class ConfigProvider implements ConfigProviderInterface
             return "";
         }
 
-        return $jsonResponse?->access_token;
+        return $jsonResponse->access_token;
     }
 
 
