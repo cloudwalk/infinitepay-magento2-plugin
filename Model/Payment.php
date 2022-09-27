@@ -157,14 +157,14 @@ class Payment extends Cc
 			
 			if($paymentMethod === 'pix') {;
 				$payment->setMethod('pix');
-				$orderState = \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT;
+				//throw new \Magento\Framework\Exception\LocalizedException(__('vai setar pending'));
+				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(true)->setIsTransactionClosed(false);
         		
 			}else{
 				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
 				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(false)->setIsTransactionClosed(true);
 			}
 
-			$order->setState($orderState)->setStatus($orderState);
 			$order->save();
 			$payment->save();
 		} else {
