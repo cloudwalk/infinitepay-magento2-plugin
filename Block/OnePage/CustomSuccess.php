@@ -3,10 +3,18 @@ namespace Cloudwalk\InfinitePay\Block\OnePage;
 
 use Magento\Checkout\Model\Session as CheckoutSession;
 
-class CustomSuccess extends \Magento\Framework\View\Element\Template
+class CustomSuccess extends \Magento\Multishipping\Block\Checkout\Success
 {
     const CODE = 'infinitepay';
 	protected $_code = self::CODE;
+
+    public function __construct(
+        \Magento\Framework\View\Element\Template\Context $context,
+        \Magento\Multishipping\Model\Checkout\Type\Multishipping $multishipping,
+        array $data = []
+    ) {
+        parent::__construct($context, $multishipping, $data);
+    }
 
     public function getPaymentAdditionalData()
     {
@@ -22,6 +30,8 @@ class CustomSuccess extends \Magento\Framework\View\Element\Template
         
         return [
             'order_increment_id' => $order->getIncrementId(),
+            'order_total' => $order->getGrandTotal(),
+            'order_view_url' => $this->getViewOrderUrl($order->getId()),
             'additional_data' => $additionalData[$this->_code]
         ];
     }
