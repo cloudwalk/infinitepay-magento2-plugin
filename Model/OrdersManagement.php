@@ -43,6 +43,16 @@ class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
         if (!array_key_exists($this->_code, $additionalData)) {
             return 'order is not infinitepay';
         }
+        
+        $callbackSignature = $data->getHeader('X-Callback-Signature');
+        $transactionSecret = $additionalData[$this->_code]['transaction_secret'];
+
+        $body = json_encode($data->getBodyParams(), JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_UNICODE);
+        $hash = hash_hmac('sha256', $body, $transactionSecret);
+
+        if ($hash != $callbackSignature) {
+            return 'invalid callback';
+        }
 
         $orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
         $order->setState($orderState)->setStatus($orderState);

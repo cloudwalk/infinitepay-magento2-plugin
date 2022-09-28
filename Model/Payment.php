@@ -157,7 +157,6 @@ class Payment extends Cc
 			
 			if($paymentMethod === 'pix') {;
 				$payment->setMethod('pix');
-				//throw new \Magento\Framework\Exception\LocalizedException(__('vai setar pending'));
 				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(true)->setIsTransactionClosed(false);
         		
 			}else{
