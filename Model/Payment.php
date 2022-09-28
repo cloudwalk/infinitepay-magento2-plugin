@@ -155,10 +155,23 @@ class Payment extends Cc
 			$payment->setAdditionalInformation($additionalData);
 			
 			
-			if($paymentMethod === 'pix') {;
+			if($paymentMethod === 'pix') {
+
+				$pix_value = $order->getGrandTotal();
+				$amount = $order->getGrandTotal();
+				$discount_pix = (float)$this->getConfigData('discount_pix');
+				$min_value_pix = (float)$this->getConfigData('min_value_pix') / 100;
+				
+				if ( $discount_pix && $amount >= $min_value_pix ) {
+					$discountValue = ( $amount * $discount_pix ) / 100;
+					$pix_value = number_format( ($amount - $discountValue), 2, ',', '.');
+				}
+
+				$order->setGrandTotal($pix_value);
+				$order->save();
+
 				$payment->setMethod('pix');
 				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(true)->setIsTransactionClosed(false);
-        		
 			}else{
 				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
 				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(false)->setIsTransactionClosed(true);
