@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [2.0.1] - 2022-10-01
+### Fixed
+- PIX improvements
 ## [2.0.0] - 2022-09-27
 
 ### Added
