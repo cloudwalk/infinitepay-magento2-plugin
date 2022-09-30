@@ -14,7 +14,6 @@ interface OrdersInterface
     /**
      * {@inheritDoc}
      * POST callback
-     * @param mixed $data
      * @return string
      */
     public function callbackStatus();

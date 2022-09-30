@@ -33,7 +33,6 @@ class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
     /**
      * {@inheritDoc}
      * process callback
-     * @param mixed $data
      * @return string
      */
     public function callbackStatus() : string
