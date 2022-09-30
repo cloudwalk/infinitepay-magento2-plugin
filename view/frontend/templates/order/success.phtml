@@ -36,7 +36,7 @@
     <div style="display: flex;flex-direction: row;justify-content: flex-start;align-items: center;background-color: #f8f8f8;border-radius: 8px; padding: 1rem;">
         <img id="copy-code" style="cursor:pointer; display: initial;margin-right: 1rem;" class="wcpix-img-copy-code" src="https://gerarqrcodepix.com.br/api/v1?brcode=<?php echo urlencode($pixCode); ?>" alt="QR Code"/>
         <div>
-            <p style="font-size: 19px;margin-bottom: 0.5rem;">Pix: <strong>R$ <?php echo $orderTotal; ?></strong></p>
+            <p style="font-size: 19px;margin-bottom: 0.5rem;">Pix: <strong>R$ <?php echo number_format($orderTotal, 2, ',', '.'); ?></strong></p>
             <div style="word-wrap: break-word; max-width: 450px;">
                 <small>
                     <!-- ko i18n: 'Transaction Code'-->

@@ -14,8 +14,7 @@ interface OrdersInterface
     /**
      * {@inheritDoc}
      * POST callback
-     * @param mixed $data
      * @return string
      */
-    public function callbackStatus(\Magento\Framework\Webapi\Rest\Request $data);
+    public function callbackStatus();
 }
