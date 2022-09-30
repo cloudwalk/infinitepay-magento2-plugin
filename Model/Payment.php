@@ -164,7 +164,7 @@ class Payment extends Cc
 				
 				if ( $discount_pix && $amount >= $min_value_pix ) {
 					$discountValue = ( $amount * $discount_pix ) / 100;
-					$pix_value = number_format( ($amount - $discountValue), 2, ',', '.');
+					$pix_value = ($amount - $discountValue);
 				}
 
 				$order->setGrandTotal($pix_value);

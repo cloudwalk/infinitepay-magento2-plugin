@@ -9,6 +9,12 @@ class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
     const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 
+    public function __construct(
+        \Magento\Framework\App\Request\Http $request
+    ) {
+        $this->request = $request;
+    }
+
     /**
      * {@inheritDoc}
      * getorder status
@@ -30,9 +36,9 @@ class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
      * @param mixed $data
      * @return string
      */
-    public function callbackStatus(\Magento\Framework\Webapi\Rest\Request $data) : string
+    public function callbackStatus() : string
     {
-        $orderId = $data->getParam('order_increment_id');
+        $orderId = $this->request->getParam('order_increment_id');
 
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $orders = $collection = $objectManager->create('Magento\Sales\Model\Order');
@@ -44,11 +50,10 @@ class OrdersManagement implements \Cloudwalk\InfinitePay\Api\OrdersInterface
             return 'order is not infinitepay';
         }
         
-        $callbackSignature = $data->getHeader('X-Callback-Signature');
+        $callbackSignature = $this->request->getHeader('X-Callback-Signature');
         $transactionSecret = $additionalData[$this->_code]['transaction_secret'];
 
-        $body = json_encode($data->getBodyParams(), JSON_UNESCAPED_LINE_TERMINATORS | JSON_UNESCAPED_UNICODE);
-        $hash = hash_hmac('sha256', $body, $transactionSecret);
+        $hash = hash_hmac('sha256', $this->request->getContent(), $transactionSecret);
 
         if ($hash != $callbackSignature) {
             return 'invalid callback';
