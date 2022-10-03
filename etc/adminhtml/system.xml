@@ -45,7 +45,7 @@
 				<field id="client_id" type="text" sortOrder="120" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>Client Id</label>
 				</field>
-				<field id="client_secret" type="text" sortOrder="130" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
+				<field id="client_secret" type="password" sortOrder="130" showInWebsite="1" showInStore="0" showInDefault="1" translate="label">
 					<label>Client Secret</label>
 				</field>
 			</group>
