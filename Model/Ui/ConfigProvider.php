@@ -92,7 +92,7 @@ class ConfigProvider implements ConfigProviderInterface
 			return 'https://authorizer-staging.infinitepay.io/v2/cards/tokenize';
 		}
 
-        return 'https://api.infinitepay.io/v2/cards/tokenize';
+        return 'https://authorizer.infinitepay.io/v2/cards/tokenize';
     }
 
     private function getJwt($isTest)
