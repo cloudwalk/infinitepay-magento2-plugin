@@ -28,7 +28,7 @@ use Magento\Framework\Math\Random;
 
 class Payment extends Cc
 {
-	const VERSION = '2.0.1';
+	const VERSION = '2.0.0';
 	const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
@@ -265,6 +265,22 @@ class Payment extends Cc
 		
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+
+		// Apply discount if it has one
+		$orderTotalWithDiscount = $amount;
+		$amount = $order->getGrandTotal();
+		$discount_pix = (!$this->getConfigData('discount_pix')) ? (float)$this->getConfigData('discount_pix') : 0;
+		$min_value_pix = (!$this->getConfigData('min_value_pix')) ? (float)$this->getConfigData('min_value_pix') : 0;
+		
+		if ( $discount_pix && $orderTotalWithDiscount >= $min_value_pix ) {
+			$discountValue          = ( $orderTotalWithDiscount * $discount_pix ) / 100;
+			$amount = $orderTotalWithDiscount - $discountValue;
+
+			$order->setGrandTotal($amount);
+			$order->save();
+		}
+
+
 
 		return [
 			'amount' => $this->converToCents($amount),

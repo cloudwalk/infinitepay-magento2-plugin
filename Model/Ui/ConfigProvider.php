@@ -139,7 +139,7 @@ class ConfigProvider implements ConfigProviderInterface
         $amount = (float)$quote->getGrandTotal();
         $max_installments = (int)$this->config->getValue('max_installments');
         $max_installments_free = (int)$this->config->getValue('max_installments_free');
-        //TODO: get this tax pay from API.
+        
         $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
         
 		$installments_value = [];
@@ -155,7 +155,7 @@ class ConfigProvider implements ConfigProviderInterface
 			}
 			$value                = ! $tax ? $amount / $i : $amount * ( $interest / ( 1 - pow( 1 + $interest, - $i ) ) );
 			$installments_value[] = array(
-				'value'    => number_format((float)$value, 2, '.', ''),
+				'value'    => number_format( number_format((float)$value, 2, '.', ''), 2, ",", "." ),
 				'interest' => $tax,
 			);
 		}
