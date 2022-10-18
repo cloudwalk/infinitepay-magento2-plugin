@@ -54,6 +54,16 @@ class ConfigProvider implements ConfigProviderInterface
         $amount = (float)$quote->getGrandTotal();
         $isTest = ((int)$this->config->getValue('sandbox') == 1);
 
+        $pix_value = 0;
+        $discount_pix = (float)$this->config->getValue('discount_pix');
+        $min_value_pix = (float)$this->config->getValue('min_value_pix') / 100;
+        
+        if ( $discount_pix && $amount >= $min_value_pix ) {
+            $discountValue          = ( $amount * $discount_pix ) / 100;
+            $pix_value = number_format( ($amount - $discountValue), 2, ',', '.');
+        }
+
+
         return [
             'payment' => [
                 self::CODE => [
@@ -63,10 +73,14 @@ class ConfigProvider implements ConfigProviderInterface
                     'max_installments_free' => $this->config->getValue('max_installments_free'),
                     'instructions' => $this->config->getValue('instructions'),
                     'description' => $this->config->getValue('description'),
-                    'version' => '0.0.1',
+                    'version' => '1.0.0',
 		            'price' => number_format((float)$amount, 2, '.', ''),
                     'jwt' => $this->getJwt($isTest),
-                    'url_tokenize' => $this->getUrlTokenize($isTest)
+                    'url_tokenize' => $this->getUrlTokenize($isTest),
+                    'cc_enabled' => (bool)$this->config->getValue('active_creditcard') == '1',
+                    'pix_enabled' => (bool)$this->config->getValue('active_pix') == '1',
+                    'discount_pix' => $discount_pix,
+                    'pix_value' => $pix_value
                 ],
             ]
         ];
@@ -78,7 +92,7 @@ class ConfigProvider implements ConfigProviderInterface
 			return 'https://authorizer-staging.infinitepay.io/v2/cards/tokenize';
 		}
 
-        return 'https://api.infinitepay.io/v2/cards/tokenize';
+        return 'https://authorizer.infinitepay.io/v2/cards/tokenize';
     }
 
     private function getJwt($isTest)
@@ -112,11 +126,10 @@ class ConfigProvider implements ConfigProviderInterface
 
         $jsonResponse = json_decode($response);
 
-        if(!$jsonResponse) {
+        if(!$jsonResponse || isset($jsonResponse->error)) {
             return "";
         }
 
-        
         return $jsonResponse->access_token;
     }
 

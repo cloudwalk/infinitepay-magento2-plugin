@@ -1,0 +1,66 @@
+<?php /* @var $block \vendor\module\Block\OnePage\CustomSuccess */?>
+<?php 
+    $data = $block->getPaymentAdditionalData();
+    if (count($data['additional_data']) && $data['additional_data']['payment_method'] === 'pix') {
+        $pixCode = $data['additional_data']['data']['attributes']['br_code'];
+        $orderIncrementId = $data['order_increment_id'];
+        $orderTotal = $data['order_total'];
+        $orderViewUrl = $data['order_view_url'];
+?> 
+
+<script>
+    require(['jquery'], function($, hello) {
+        $(document).ready(function() {
+            let code = 'infinitepay'
+            let orderId = $("#" + code + "-order-increment-id").val();
+
+            var intervalID = setInterval(function() {
+                $.get('/rest/V1/infinitepay/orders/' + orderId, function(data) {
+                    if  (data === 'processing') {
+                        $("#infinitepay-box-pix-qrcode").hide();
+                        $("#infinitepay-box-pix-success").show();
+                        clearInterval(intervalID);
+                    }          
+                });     
+             }, 5000);
+
+            
+        });
+        
+    });
+    
+</script>
+<input type="hidden" id="infinitepay-order-increment-id" value="<? echo $orderIncrementId ?>" />
+
+<div id="infinitepay-box-pix-qrcode">
+    <div style="display: flex;flex-direction: row;justify-content: flex-start;align-items: center;background-color: #f8f8f8;border-radius: 8px; padding: 1rem;">
+        <img id="copy-code" style="cursor:pointer; display: initial;margin-right: 1rem;" class="wcpix-img-copy-code" src="https://gerarqrcodepix.com.br/api/v1?brcode=<?php echo urlencode($pixCode); ?>" alt="QR Code"/>
+        <div>
+            <p style="font-size: 19px;margin-bottom: 0.5rem;">Pix: <strong>R$ <?php echo number_format($orderTotal, 2, ',', '.'); ?></strong></p>
+            <div style="word-wrap: break-word; max-width: 450px;">
+                <small>
+                    <!-- ko i18n: 'Transaction Code'-->
+                    <!-- /ko -->
+                </small><br>
+                <code style="font-size: 87.5%; color: #e83e8c; word-wrap: break-word;"><?php echo $orderIncrementId; ?></code>
+            </div>
+        </div>
+    </div>
+    
+    <p style="margin-top: 1rem;">
+        <!-- ko i18n: 'If you have already paid, check that it has been confirmed on the page'--><!-- /ko --> <a href="<?php echo $orderViewUrl; ?>"><!-- ko i18n: 'order details'--><!-- /ko --></a>
+    </p>
+</div>
+<div id="infinitepay-box-pix-success" style="display:none">
+    <div style="display: flex;flex-direction: row;justify-content: flex-start;align-items: center;background-color: #f8f8f8;border-radius: 8px; padding: 1rem;">
+        <div>
+            <h2>
+                <!-- ko i18n: 'Payment Received'-->
+                    <!-- /ko -->
+            </h2>
+            <p><!-- ko i18n: 'Thank you for buy in our store. You can check progress of order on the order page.'--><!-- /ko --></p><a href="<?php echo $orderViewUrl; ?>"><!-- ko i18n: 'go to order'--><!-- /ko --></a>
+        </div>
+    </div>
+</div>
+
+<? } ?>

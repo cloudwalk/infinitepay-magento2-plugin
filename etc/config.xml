@@ -13,13 +13,19 @@
 		</payment>
 		<sales>
 			<general>
-				<enabled/>
+				<active/>
 				<title/>
-				<description/>
-				<instructions/>
+				<active_creditcard/>
+				<instructions_creditcard/>
 				<max_installments/>
 				<max_installments_free/>
-				<api_key/>
+				<active_pix/>
+				<instructions_pix/>
+				<discount_pix/>
+				<min_value_pix/>
+				<sandbox/>
+				<client_id/>
+				<client_secret/>
 			</general>
 		</sales>
 	</default>

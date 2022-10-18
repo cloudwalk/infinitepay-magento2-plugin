@@ -1,7 +1,8 @@
 {
-    "name": "cloudwalk/infinitepay",
+    "name": "infinitepay/checkout",
     "description": "InfinitePay Plugin",
     "type": "magento2-module",
+    "version": "2.0.1",
     "license": "MIT",
     "authors": [{
         "name": "Cloudwalk",

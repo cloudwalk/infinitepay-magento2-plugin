@@ -6,5 +6,5 @@
             <argument name="methodCode" xsi:type="const">\Cloudwalk\InfinitePay\Model\Ui\ConfigProvider::CODE</argument>
         </arguments>
     </virtualType>`
-
+    <preference for="Cloudwalk\InfinitePay\Api\OrdersInterface" type="Cloudwalk\InfinitePay\Model\OrdersManagement" />
 </config>

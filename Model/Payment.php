@@ -24,11 +24,11 @@ use Magento\Checkout\Model\Cart;
 use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\HTTP\Client\Curl;
-
+use Magento\Framework\Math\Random;
 
 class Payment extends Cc
 {
-	const VERSION = '1.0.0';
+	const VERSION = '2.0.1';
 	const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
@@ -42,8 +42,9 @@ class Payment extends Cc
 	protected $customerRepository;
 	protected $_logger;
 	protected $_curl;
+	protected $_transactionSecret;
 
-    public function __construct(		
+    public function __construct(	
 		Session $customerSession,
 		CheckoutSession $checkoutSession,
 		Context $context,
@@ -57,6 +58,7 @@ class Payment extends Cc
 		TimezoneInterface $localeDate,
 		CountryFactory $countryFactory,
 		Cart $cart, 
+		Random $mathRandom,
 		CustomerRepositoryInterface $customerRepository,
 		\Magento\Framework\HTTP\Client\Curl $curl,
 		array $data = array()
@@ -69,40 +71,136 @@ class Payment extends Cc
 		$this->customerRepository = $customerRepository;
 		$this->_customerSession = $customerSession;	
 		$this->_logger = $logger;
+		$this->mathRandom = $mathRandom;
     }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
     {
-		$order = $payment->getOrder();
-        $billing = $order->getBillingAddress();
+		$isTest = ((int)$this->getConfigData('sandbox') == 1);
 		$info = $this->getInfoInstance();
 		$paymentInfo = $info->getAdditionalInformation()['additional_data'];
-		$isTest = ((int)$this->getConfigData('sandbox') == 1);
-        
-		$order_items = [];
-		if (count($order->getAllVisibleItems()) > 0) {
-			foreach ($order->getAllVisibleItems() as $item) {
-				$order_items[] = array(
-					'id'          => (string)$item->getSku(),
-					'description' => $item->getName(),
-					'amount'      => (int)preg_replace('/[^0-9]/', '', $item->getOriginalPrice()),
-					'quantity'    => (int)$item->getQtyOrdered()
-				);
+		$paymentMethod = $paymentInfo['payment_method'];
+		$order = $payment->getOrder();
+
+		if($paymentMethod === 'cc') {
+			$requestData = $this->buildCreditCardPayload($payment, $paymentInfo, $amount);
+		}else{
+			$this->_transactionSecret = sha1( $order->getIncrementId() . time() );
+			$requestData = $this->buildPixPayload($payment, $paymentInfo, $amount);
+		}
+		
+
+		$response = $this->authRequest($requestData, $isTest, $paymentMethod);
+		$this->handleResponse($response, $payment, $paymentMethod);
+		
+        return $this;
+    }
+
+	private function authRequest($request, $isTest, $paymentMethod)
+    {
+		$url = 'https://api.infinitepay.io/v2/transactions';
+		if($isTest) {
+			$url = 'https://authorizer-staging.infinitepay.io/v2/transactions';
+			if($paymentMethod == 'cc') {
+				$this->_curl->addHeader('Env','mock');
 			}
 		}
+	
+		$token = $this->getJwt($isTest);
+		
+		$this->_curl->addHeader('Content-Type', 'application/json');
+		$this->_curl->addHeader('Accept', 'application/json');
+		$this->_curl->addHeader('Authorization', "Bearer {$token}"); 
+		$this->_curl->setOption(CURLOPT_HEADER, 0);
+		$this->_curl->setOption(CURLOPT_TIMEOUT, 60);
+		$this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
+		$this->_curl->setOption(CURLOPT_USERAGENT, "InfinitePay Plugin for Magento 2");
+        $this->_curl->setOption(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
+		
+		$this->_curl->post($url, json_encode($request));
+		$response = $this->_curl->getBody();		
+		$responseJson = json_decode($response);
+		
+		if($isTest) { 
+			$debug = [
+				'url' => $url,
+				'token' => $token,
+				'request' => $request,
+				'header'=> $this->_curl->getHeaders(),
+				'response' => $responseJson
+			];
+			$this->_logger->debug(['infinitepay request', $debug], null, true);
+		}
+
+        if (!$responseJson)
+        {
+			$this->_logger->error(__('Failed authorize request.'));
+            throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
+        }
+		
+        return $responseJson;
+    }
+
+	private function handleResponse($response, $payment, $paymentMethod) {
+		if($response->data->attributes->authorization_code === '00' || $response->data->attributes->authorization_code === '01')
+		{
+			$order = $payment->getOrder();
+			$payment->setTransactionId($response->data->id);
+			$additionalData = [
+				$this->_code => [
+					'payment_method' => $paymentMethod,
+					'transaction_secret' =>  $this->_transactionSecret,
+					'order_increment_id' => $payment->getOrder()->getIncrementId(),
+					'data' => (array)$response->data
+				]
+			];
+			$payment->setAdditionalInformation($additionalData);
+			
+			
+			if($paymentMethod === 'pix') {
+
+				$pix_value = $order->getGrandTotal();
+				$amount = $order->getGrandTotal();
+				$discount_pix = (float)$this->getConfigData('discount_pix');
+				$min_value_pix = (float)$this->getConfigData('min_value_pix') / 100;
+				
+				if ( $discount_pix && $amount >= $min_value_pix ) {
+					$discountValue = ( $amount * $discount_pix ) / 100;
+					$pix_value = ($amount - $discountValue);
+				}
+
+				$order->setGrandTotal($pix_value);
+				$order->save();
+
+				$payment->setMethod('pix');
+				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(true)->setIsTransactionClosed(false);
+			}else{
+				$orderState = \Magento\Sales\Model\Order::STATE_PROCESSING;
+				$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(false)->setIsTransactionClosed(true);
+			}
+
+			$order->save();
+			$payment->save();
+		} else {
+			throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
+		}
+	}
+
+	private function buildCreditCardPayload($payment, $paymentInfo, $amount) {
+		$order = $payment->getOrder();
+        $billing = $order->getBillingAddress();
 		
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
-		
-		//build array of all necessary details to pass to infinitePay
-		$request = [
+
+		return [
 			'payment' => array(
 				'amount' => $this->converToCents($amount),
 				'capture_method' =>'ecommerce',
 				'origin'         =>'magento',
 				'payment_method' => 'credit',
 				'installments' => (int)$paymentInfo['installments'],
-				'nsu' => $this->generate_uuid()
+				'nsu' => $this->mathRandom->getUniqueHash()
 			),
 			'card' => array(
 				'cvv' => $payment->getCcCid(), 
@@ -112,7 +210,7 @@ class Payment extends Cc
 			'order'                => array(
 				'id'               => (string)$order->getIncrementId(),
 				'amount'           => $this->converToCents($amount),
-				'items'            => $order_items,
+				'items'            => $this->buildOrderItemsPayload($order),
 				'delivery_details' => array(
 					'email'        => $order->getCustomerEmail(),
 					'name'         => $billing->getName(),
@@ -159,30 +257,50 @@ class Payment extends Cc
 				)
 			)
 		];
-			
-		$response = $this->authRequest($request, $isTest);
+	}
+
+	private function buildPixPayload($payment, $paymentInfo, $amount) {
+		$order = $payment->getOrder();
+        $billing = $order->getBillingAddress();
 		
-		if($response->data->attributes->authorization_code === '00')
-		{
-			$payment->setTransactionId($response->data->id);
-			$payment->setAdditionalInformation([\Magento\Sales\Model\Order\Payment\Transaction::RAW_DETAILS => (array)$response->data]);
-		} else {
-			throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
+		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
+
+		return [
+			'amount' => $this->converToCents($amount),
+			'capture_method' =>'pix',
+			'origin'         =>'magento',
+			'metadata' => array(
+				'store_url' => $storeManager->getStore()->getBaseUrl(),
+				'plugin_version' => self::VERSION,
+				'payment_method' => 'pix',
+				'callback' => array(
+					'validate' => '',
+					'confirm'  => $storeManager->getStore()->getBaseUrl() . '/rest/V1/infinitepay/orders/pix_callback?order_increment_id=' . $order->getIncrementId(),
+					'secret'   => $this->_transactionSecret
+				),
+				'risk'           => array(
+					'session_id' => $this->_customerSession->getSessionId(),
+					'payer_ip'   => isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']),
+				)
+			)
+		];
+	}
+
+	private function buildOrderItemsPayload($order) {
+		$order_items = [];
+		if (count($order->getAllVisibleItems()) > 0) {
+			foreach ($order->getAllVisibleItems() as $item) {
+				$order_items[] = array(
+					'id'          => (string)$item->getSku(),
+					'description' => $item->getName(),
+					'amount'      => (int)preg_replace('/[^0-9]/', '', $item->getOriginalPrice()),
+					'quantity'    => (int)$item->getQtyOrdered()
+				);
+			}
 		}
 
-		$payment->setShouldCloseParentTransaction(true)->setIsTransactionPending(false)->setIsTransactionClosed(true)->resetTransactionAdditionalInfo();
-        //$payment->setIsTransactionClosed(1);
-        return $this;
-    }
-
-	private function generate_uuid() {
-		$data = openssl_random_pseudo_bytes( 16 );
-		assert( strlen( $data ) == 16 );
-
-		$data[6] = chr( ord( $data[6] ) & 0x0f | 0x40 ); // set version to 0100
-		$data[8] = chr( ord( $data[8] ) & 0x3f | 0x80 ); // set bits 6-7 to 10
-
-		return vsprintf( '%s%s-%s-%s-%s-%s%s%s', str_split( bin2hex( $data ), 4 ) );
+		return $order_items;
 	}
 
 	private function getJwt($isTest)
@@ -229,51 +347,6 @@ class Payment extends Cc
 		$dollars = str_replace('$', '', $amount);
 		return (int)((string)( $dollars * 100 ));
 	}
-	
-    public function authRequest($request, $isTest)
-    {
-
-		$url = 'https://api.infinitepay.io/v2/transactions';
-		if($isTest) {
-			$url = 'https://authorizer-staging.infinitepay.io/v2/transactions';
-			$this->_curl->addHeader('Env','mock');
-		}
-	
-		$token = $this->getJwt($isTest);
-		
-
-		$this->_curl->addHeader('Content-Type', 'application/json');
-		$this->_curl->addHeader('Accept', 'application/json');
-		$this->_curl->addHeader('Authorization', "Bearer {$token}"); 
-		$this->_curl->setOption(CURLOPT_HEADER, 0);
-		$this->_curl->setOption(CURLOPT_TIMEOUT, 60);
-		$this->_curl->setOption(CURLOPT_RETURNTRANSFER, true);
-		$this->_curl->setOption(CURLOPT_USERAGENT, "InfinitePay Plugin for Magento 2");
-        $this->_curl->setOption(CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4);
-		
-		$this->_curl->post($url, json_encode($request));
-		$response = $this->_curl->getBody();		
-		$responseJson = json_decode($response);
-		
-		if($isTest) { 
-			$debug = [
-				'url' => $url,
-				'token' => $token,
-				'request' => $request,
-				'header'=> $this->_curl->getHeaders(),
-				'response' => $responseJson
-			];
-			$this->_logger->debug(['infinitepay request', $debug], null, true);
-		}
-
-        if (!$responseJson)
-        {
-			$this->_logger->error(__('Failed authorize request.'));
-            throw new \Magento\Framework\Exception\LocalizedException(__('Failed authorize request.'));
-        }
-		
-        return $responseJson;
-    }
 
 	public function assignData(\Magento\Framework\DataObject $data)
 	{
