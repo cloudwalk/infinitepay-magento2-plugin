@@ -41,7 +41,8 @@ define([
             let installments = [];
             for (let i = 1; i <= max_installments; i++) {
                 if (i === 1) {
-                    installments.push({ value: 1, text: 'R$ ' + window.checkoutConfig.payment.infinitepay.price + ' à vista' });
+                    var value = window.checkoutConfig.payment.infinitepay.price.replace(".", ",");
+                    installments.push({ value: 1, text: 'R$ ' + value + ' à vista' });
                 } else {
                     let new_value = arr_installments[i - 1]['value'];
                     let has_interest = (arr_installments[i - 1]['interest'] ? 'com' : 'sem') + ' juros';
