@@ -142,6 +142,9 @@ class ConfigProvider implements ConfigProviderInterface
         
         $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
         
+        
+
+
 		$installments_value = [];
 		for (
 			$i = 1;
@@ -153,7 +156,12 @@ class ConfigProvider implements ConfigProviderInterface
 			if ( $tax ) {
 				$interest = $infinite_pay_tax[ $i - 1 ] / 100;
 			}
-			$value                = ! $tax ? $amount / $i : $amount * ( $interest / ( 1 - pow( 1 + $interest, - $i ) ) );
+			$value = ! $tax ? $amount / $i : $amount * ( $interest / ( 1 - pow( 1 + $interest, - $i ) ) );
+
+            if($value < 1.00) {
+                return [];
+            }
+
 			$installments_value[] = array(
 				'value'    => number_format( number_format((float)$value, 2, '.', ''), 2, ",", "." ),
 				'interest' => $tax,

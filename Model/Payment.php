@@ -82,6 +82,8 @@ class Payment extends Cc
 		$paymentMethod = $paymentInfo['payment_method'];
 		$order = $payment->getOrder();
 
+
+
 		if($paymentMethod === 'cc') {
 			$requestData = $this->buildCreditCardPayload($payment, $paymentInfo, $amount);
 		}else{
@@ -273,7 +275,7 @@ class Payment extends Cc
 		$min_value_pix = (!$this->getConfigData('min_value_pix')) ? (float)$this->getConfigData('min_value_pix') : 0;
 		
 		if ( $discount_pix && $orderTotalWithDiscount >= $min_value_pix ) {
-			$discountValue          = ( $orderTotalWithDiscount * $discount_pix ) / 100;
+			$discountValue = ( $orderTotalWithDiscount * $discount_pix ) / 100;
 			$amount = $orderTotalWithDiscount - $discountValue;
 
 			$order->setGrandTotal($amount);
@@ -283,7 +285,7 @@ class Payment extends Cc
 
 
 		return [
-			'amount' => $this->converToCents($amount),
+			'amount' => $this->converToCents($order->getGrandTotal()),
 			'capture_method' =>'pix',
 			'origin'         =>'magento',
 			'metadata' => array(
