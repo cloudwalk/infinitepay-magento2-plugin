@@ -62,7 +62,8 @@ class ConfigProvider implements ConfigProviderInterface
             $discountValue          = ( $amount * $discount_pix ) / 100;
             $pix_value = number_format( ($amount - $discountValue), 2, ',', '.');
         }
-
+        
+        $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
 
         return [
             'payment' => [
@@ -71,9 +72,10 @@ class ConfigProvider implements ConfigProviderInterface
                     'installments' => $this->calculate_installments(),
                     'max_installments' => $this->config->getValue('max_installments'),
                     'max_installments_free' => $this->config->getValue('max_installments_free'),
+                    'infinite_pay_tax' => $infinite_pay_tax,
                     'instructions' => $this->config->getValue('instructions'),
                     'description' => $this->config->getValue('description'),
-                    'version' => '1.0.0',
+                    'version' => \Cloudwalk\InfinitePay\Model\Payment::VERSION,
 		            'price' => number_format((float)$amount, 2, '.', ''),
                     'jwt' => $this->getJwt($isTest),
                     'url_tokenize' => $this->getUrlTokenize($isTest),
