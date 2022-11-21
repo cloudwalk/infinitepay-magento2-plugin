@@ -138,15 +138,12 @@ class ConfigProvider implements ConfigProviderInterface
 
     private function calculate_installments(): array {
         $quote = $this->checkoutSession->getQuote();
-        $amount = (float)$quote->getGrandTotal();
+        $amount = (float)$quote->getGrandTotal() + (float)$quote->getShippingAmount();
         $max_installments = (int)$this->config->getValue('max_installments');
         $max_installments_free = (int)$this->config->getValue('max_installments_free');
         
         $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
         
-        
-
-
 		$installments_value = [];
 		for (
 			$i = 1;

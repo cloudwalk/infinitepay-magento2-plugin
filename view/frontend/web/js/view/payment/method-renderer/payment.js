@@ -35,45 +35,18 @@ define([
             }
             return data;
         },
-        getInstallmentsData: function () {
-            let amount = Number(window.checkoutConfig.quoteData.base_grand_total).toFixed(2);
-
-            let max_installments = window.checkoutConfig.payment.infinitepay.max_installments;
-            let max_installments_free = window.checkoutConfig.payment.infinitepay.max_installments_free;
-            let infinite_pay_tax = window.checkoutConfig.payment.infinitepay.infinite_pay_tax;
-            let arr_installments = [];
-            
-            for(let i = 1; i <= max_installments; i++) {
-            
-                let tax      = ! (max_installments_free >= i ) && i > 1;
-                let interest = 1;
-                if ( tax ) {
-                    interest = infinite_pay_tax[ i - 1 ] / 100;
-                }
-                let value = ! tax ? amount / i : amount * ( interest / ( 1 - Math.pow( 1 + interest, - i ) ) );
-            
-                if(value < 1.00) {
-                    return [];
-                }
-                arr_installments.push({
-                    'value'    : Number(value.toFixed(2)),
-                    'interest' : tax,
-                });
-            }
-            return arr_installments;
-        },
         getInstallments: function () {
             let max_installments = window.checkoutConfig.payment.infinitepay.max_installments;
-            let arr_installments = this.getInstallmentsData(); //window.checkoutConfig.payment.infinitepay.installments;
+            let arr_installments = window.checkoutConfig.payment.infinitepay.installments;
             let installments = [];
             for (let i = 1; i <= max_installments; i++) {
                 if (i === 1) {
-                    var value = Number(window.checkoutConfig.quoteData.base_grand_total).toFixed(2);
-                    installments.push({ value: 1, text: 'R$ ' + value.toString().replace(".", ",") + ' à vista' });
+                    var value = window.checkoutConfig.payment.infinitepay.price.replace(".", ",");
+                    installments.push({ value: 1, text: 'R$ ' + value + ' à vista' });
                 } else {
                     let new_value = arr_installments[i - 1]['value'];
                     let has_interest = (arr_installments[i - 1]['interest'] ? 'com' : 'sem') + ' juros';
-                    let msg = i + 'x de R$ ' + new_value.toString().replace(".", ",") + ' ' + has_interest;
+                    let msg = i + 'x de R$ ' + new_value + ' ' + has_interest;
                     installments.push({ value: i, text: msg });
                 }
             }
