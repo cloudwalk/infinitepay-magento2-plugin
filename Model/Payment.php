@@ -28,7 +28,7 @@ use Magento\Framework\Math\Random;
 
 class Payment extends Cc
 {
-	const VERSION = '2.0.0';
+	const VERSION = '2.0.1';
 	const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
