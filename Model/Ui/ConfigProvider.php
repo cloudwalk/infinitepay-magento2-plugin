@@ -62,7 +62,8 @@ class ConfigProvider implements ConfigProviderInterface
             $discountValue          = ( $amount * $discount_pix ) / 100;
             $pix_value = number_format( ($amount - $discountValue), 2, ',', '.');
         }
-
+        
+        $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
 
         return [
             'payment' => [
@@ -71,9 +72,10 @@ class ConfigProvider implements ConfigProviderInterface
                     'installments' => $this->calculate_installments(),
                     'max_installments' => $this->config->getValue('max_installments'),
                     'max_installments_free' => $this->config->getValue('max_installments_free'),
+                    'infinite_pay_tax' => $infinite_pay_tax,
                     'instructions' => $this->config->getValue('instructions'),
                     'description' => $this->config->getValue('description'),
-                    'version' => '1.0.0',
+                    'version' => \Cloudwalk\InfinitePay\Model\Payment::VERSION,
 		            'price' => number_format((float)$amount, 2, '.', ''),
                     'jwt' => $this->getJwt($isTest),
                     'url_tokenize' => $this->getUrlTokenize($isTest),
@@ -136,10 +138,10 @@ class ConfigProvider implements ConfigProviderInterface
 
     private function calculate_installments(): array {
         $quote = $this->checkoutSession->getQuote();
-        $amount = (float)$quote->getGrandTotal();
+        $amount = (float)$quote->getGrandTotal() + (float)$quote->getShippingAmount();
         $max_installments = (int)$this->config->getValue('max_installments');
         $max_installments_free = (int)$this->config->getValue('max_installments_free');
-        //TODO: get this tax pay from API.
+        
         $infinite_pay_tax = [1, 1.3390, 1.5041, 1.5992, 1.6630, 1.7057, 2.3454, 2.3053, 2.2755, 2.2490, 2.2306, 2.2111];
         
 		$installments_value = [];
@@ -153,9 +155,14 @@ class ConfigProvider implements ConfigProviderInterface
 			if ( $tax ) {
 				$interest = $infinite_pay_tax[ $i - 1 ] / 100;
 			}
-			$value                = ! $tax ? $amount / $i : $amount * ( $interest / ( 1 - pow( 1 + $interest, - $i ) ) );
+			$value = ! $tax ? $amount / $i : $amount * ( $interest / ( 1 - pow( 1 + $interest, - $i ) ) );
+
+            if($value < 1.00) {
+                return [];
+            }
+
 			$installments_value[] = array(
-				'value'    => number_format((float)$value, 2, '.', ''),
+				'value'    => number_format( number_format((float)$value, 2, '.', ''), 2, ",", "." ),
 				'interest' => $tax,
 			);
 		}

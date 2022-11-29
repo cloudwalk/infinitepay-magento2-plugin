@@ -1,5 +1,5 @@
 {
-    "name": "infinitepay/checkout",
+    "name": "cloudwalkio/infinitepay",
     "description": "InfinitePay Plugin",
     "type": "magento2-module",
     "version": "2.0.1",

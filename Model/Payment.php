@@ -82,6 +82,8 @@ class Payment extends Cc
 		$paymentMethod = $paymentInfo['payment_method'];
 		$order = $payment->getOrder();
 
+
+
 		if($paymentMethod === 'cc') {
 			$requestData = $this->buildCreditCardPayload($payment, $paymentInfo, $amount);
 		}else{
@@ -266,8 +268,24 @@ class Payment extends Cc
 		$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
 		$storeManager = $objectManager->get('\Magento\Store\Model\StoreManagerInterface');
 
+		// Apply discount if it has one
+		$totalWDisc = $amount;
+		$amount = $order->getGrandTotal();
+		$discount_pix = (!$this->getConfigData('discount_pix')) ? (float)$this->getConfigData('discount_pix') : 0;
+		$min_value_pix = (!$this->getConfigData('min_value_pix')) ? (float)$this->getConfigData('min_value_pix') : 0;
+		
+		if ( $discount_pix && $totalWDisc >= $min_value_pix ) {
+			$discountValue = ( $totalWDisc * $discount_pix ) / 100;
+			$amount = $totalWDisc - $discountValue;
+
+			$order->setGrandTotal($amount);
+			$order->save();
+		}
+
+
+
 		return [
-			'amount' => $this->converToCents($amount),
+			'amount' => $this->converToCents($order->getGrandTotal()),
 			'capture_method' =>'pix',
 			'origin'         =>'magento',
 			'metadata' => array(
