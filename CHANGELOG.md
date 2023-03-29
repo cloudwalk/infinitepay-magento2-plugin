@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+## [2.0.2] - 2023-04-01
+### Fixed
+- PIX UI improvements
+- Secutiry improvements
+- Log improvements
+
 ## [2.0.1] - 2022-10-01
 ### Fixed
 - PIX improvements
