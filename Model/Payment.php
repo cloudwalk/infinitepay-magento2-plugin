@@ -381,11 +381,6 @@ class Payment extends Cc
     {
         $parent = parent::isAvailable($quote);
         $status = true;
-		
-        // if (!$parent) {
-        //     $this->_helperData->log('CustomPayment::isAvailable - Module not available due to magento rules.');
-        //     $status = false;
-        // }		
         return $status;
     }
 
