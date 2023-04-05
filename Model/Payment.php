@@ -28,7 +28,7 @@ use Magento\Framework\Math\Random;
 
 class Payment extends Cc
 {
-	const VERSION = '2.0.1';
+	const VERSION = '2.0.2';
 	const CODE = 'infinitepay';
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
@@ -87,7 +87,7 @@ class Payment extends Cc
 		if($paymentMethod === 'cc') {
 			$requestData = $this->buildCreditCardPayload($payment, $paymentInfo, $amount);
 		}else{
-			$this->_transactionSecret = sha1( $order->getIncrementId() . time() );
+			$this->_transactionSecret = sha1( $order->getIncrementId() . random_bytes(10) );
 			$requestData = $this->buildPixPayload($payment, $paymentInfo, $amount);
 		}
 		
@@ -381,11 +381,6 @@ class Payment extends Cc
     {
         $parent = parent::isAvailable($quote);
         $status = true;
-		
-        // if (!$parent) {
-        //     $this->_helperData->log('CustomPayment::isAvailable - Module not available due to magento rules.');
-        //     $status = false;
-        // }		
         return $status;
     }
 
