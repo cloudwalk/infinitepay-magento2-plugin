@@ -28,8 +28,11 @@ use Magento\Framework\Math\Random;
 
 class Payment extends Cc
 {
-	const VERSION = '2.0.2';
+	const VERSION = '2.0.3';
 	const CODE = 'infinitepay';
+	
+	private $_SERVER;
+
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
 	protected $_canCapture = true;
@@ -255,10 +258,19 @@ class Payment extends Cc
 				'plugin_version' => self::VERSION,
 				'risk'           => array(
 					'session_id' => $this->_customerSession->getSessionId(),
-					'payer_ip'   => isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']),
+					'payer_ip'   => $this->payer_ip(),
 				)
 			)
 		];
+	}
+
+	private function payer_ip() {
+
+		$http_client_ip = $this->get_SERVER('HTTP_CLIENT_IP');
+		$http_x_foward = $this->get_SERVER('HTTP_X_FORWARDED_FOR');
+		$remote_addr = $this->get_SERVER('REMOTE_ADDR');
+
+		return isset( $http_client_ip ) ? $http_client_ip : ( isset($http_x_foward) ? $http_x_foward : $remote_addr );
 	}
 
 	private function buildPixPayload($payment, $paymentInfo, $amount) {
@@ -299,7 +311,7 @@ class Payment extends Cc
 				),
 				'risk'           => array(
 					'session_id' => $this->_customerSession->getSessionId(),
-					'payer_ip'   => isset($_SERVER['HTTP_CLIENT_IP']) ? $_SERVER['HTTP_CLIENT_IP'] : (isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? $_SERVER['HTTP_X_FORWARDED_FOR'] : $_SERVER['REMOTE_ADDR']),
+					'payer_ip'   => $this->payer_ip(),
 				)
 			)
 		];
@@ -389,4 +401,14 @@ class Payment extends Cc
         AbstractMethod::validate();
         return $this;
     }
+
+	public function get_SERVER($key = null)
+    {
+        if (null !== $key) {
+            return (isset($this->_SERVER["$key"])) ? $this->_SERVER["$key"] : null;
+        } else {
+            return $this->_SERVER;
+        }
+    }
+
 }
