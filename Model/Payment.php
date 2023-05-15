@@ -25,13 +25,14 @@ use Magento\Checkout\Model\Session as CheckoutSession;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Framework\HTTP\Client\Curl;
 use Magento\Framework\Math\Random;
+use Magento\Framework\App\RequestInterface;
 
 class Payment extends Cc
 {
 	const VERSION = '2.0.3';
 	const CODE = 'infinitepay';
 	
-	private $_SERVER;
+	private $request;
 
 	protected $_code = self::CODE;
 	protected $_canAuthorize = true;
@@ -64,6 +65,7 @@ class Payment extends Cc
 		Random $mathRandom,
 		CustomerRepositoryInterface $customerRepository,
 		\Magento\Framework\HTTP\Client\Curl $curl,
+		RequestInterface $httpRequest
 		array $data = array()
 	) {
 		parent::__construct($context, $registry, $extensionFactory, $customAttributeFactory, $paymentData, $scopeConfig, $logger, $moduleList, $localeDate, null, null, $data);
@@ -75,6 +77,8 @@ class Payment extends Cc
 		$this->_customerSession = $customerSession;	
 		$this->_logger = $logger;
 		$this->mathRandom = $mathRandom;
+
+		$this->request = $httpRequest;
     }
 
     public function authorize(\Magento\Payment\Model\InfoInterface $payment, $amount)
@@ -266,9 +270,9 @@ class Payment extends Cc
 
 	private function payer_ip() {
 
-		$http_client_ip = $this->get_SERVER('HTTP_CLIENT_IP');
-		$http_x_foward = $this->get_SERVER('HTTP_X_FORWARDED_FOR');
-		$remote_addr = $this->get_SERVER('REMOTE_ADDR');
+		$http_client_ip = $this->request->getServer('HTTP_CLIENT_IP');
+		$http_x_foward = $this->request->getServer('HTTP_X_FORWARDED_FOR');
+		$remote_addr = $this->request->getServer('REMOTE_ADDR');
 
 		return isset( $http_client_ip ) ? $http_client_ip : ( isset($http_x_foward) ? $http_x_foward : $remote_addr );
 	}
@@ -400,15 +404,6 @@ class Payment extends Cc
     {
         AbstractMethod::validate();
         return $this;
-    }
-
-	public function get_SERVER($key = null)
-    {
-        if (null !== $key) {
-            return (isset($this->_SERVER["$key"])) ? $this->_SERVER["$key"] : null;
-        } else {
-            return $this->_SERVER;
-        }
     }
 
 }
